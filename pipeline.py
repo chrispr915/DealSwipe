@@ -23,7 +23,7 @@ import db
 
 AFFILIATE_TAG = "dealswipes-20"
 HTML_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "index.html")
-MIN_DISCOUNT = 50
+MIN_DISCOUNT = 40
 
 # Search queries per category — diverse terms to find good deals
 SEARCH_QUERIES = {
@@ -181,10 +181,29 @@ def scrape_search(driver, query):
                     current += float(f"0.{price_frac[0].text.strip()}")
 
                 original = 0
+
+                # Get the full result HTML to check for per-unit pricing
+                result_text = result.text
+
+                # Check if this has per-unit pricing (/Fl Oz, /Ounce, /Count, etc.)
+                # These show a high "price per unit" that looks like an original price
+                has_per_unit = bool(re.search(
+                    r'\$/?(Fl\s*Oz|Ounce|Count|oz|ml|lb|Gram|ct|Each|Item)',
+                    result_text, re.IGNORECASE
+                ))
+
+                # Only look for struck-through original price if no per-unit pricing confusion
                 old = result.find_elements(By.CSS_SELECTOR, "span.a-price.a-text-price span.a-offscreen")
                 if old:
                     try:
-                        original = float(old[0].get_attribute("textContent").replace("$", "").replace(",", "").strip())
+                        candidate = float(old[0].get_attribute("textContent").replace("$", "").replace(",", "").strip())
+                        # Sanity checks to avoid per-unit price confusion:
+                        # 1. Original should be > current but not absurdly higher
+                        # 2. If per-unit pricing detected, be extra strict
+                        # 3. Keep ratios realistic — real deals rarely exceed 3x
+                        max_ratio = 2.0 if has_per_unit else 3.0
+                        if current < candidate <= current * max_ratio:
+                            original = candidate
                     except:
                         pass
 
@@ -294,6 +313,11 @@ def process(raw_data, min_discount=MIN_DISCOUNT):
             if price < 1.00:
                 continue
 
+            # Skip fake discounts: if "was" price is absurdly higher, it's probably
+            # a per-ounce/per-unit price, not a real original price
+            if was > price * 3:
+                continue
+
             # Calculate discount
             if was > price:
                 discount = round((1 - price / was) * 100)
@@ -326,8 +350,8 @@ def process(raw_data, min_discount=MIN_DISCOUNT):
         # Sort by discount descending
         cleaned.sort(key=lambda x: x["discount"], reverse=True)
 
-        # Keep top 8 per category
-        processed[cat] = cleaned[:8]
+        # Keep top 10 per category
+        processed[cat] = cleaned[:10]
 
         print(f"    {cat}: {len(products)} raw -> {len(cleaned)} at {min_discount}%+ -> keeping top {len(processed[cat])}")
 
@@ -405,15 +429,15 @@ def regenerate_html(categories):
                 f"      title: '{title_escaped}',\n"
                 f"      img: '{d['img_url'] if 'img_url' in d else d.get('img', '')}',\n"
                 f"      price: {d['price']:.2f}, was: {d['was_price'] if 'was_price' in d else d.get('was', 0):.2f}, discount: {d['discount']}, store: '{d.get('store', 'Amazon')}',\n"
-                f"      url: 'https://www.amazon.com/dp/{d['asin']}?tag=' + AFFILIATE_TAG\n"
+                f"      url: 'https://www.amazon.com/dp/{d['asin']}?tag='+TAG\n"
                 f"    }}"
             )
         sections.append(f"  {cat}: [\n" + ",\n".join(items) + "\n  ]")
 
-    new_products_block = "const products = {\n" + ",\n".join(sections) + "\n};"
+    new_products_block = "const products={\n" + ",\n".join(sections) + "\n};"
 
-    # Replace old products block
-    pattern = re.compile(r'const products = \{.*?\};', re.DOTALL)
+    # Replace old products block (handles both spaced and compact formats)
+    pattern = re.compile(r'const products\s*=\s*\{.*?\};', re.DOTALL)
     if pattern.search(html):
         html = pattern.sub(new_products_block, html)
     else:

@@ -2,634 +2,537 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>SwipeDeals — Swipe. Save. Score.</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+  <title>DiscoDealss</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    :root {
-      --bg: #0a0a0f;
-      --surface: #12121c;
-      --card: #1a1a2e;
-      --border: #2a2a3e;
-      --text: #f0f0f5;
-      --muted: #7a7a9a;
-      --accent: #7c3aed;
-      --glow: #a855f7;
-      --green: #22c55e;
-      --red: #ef4444;
-      --orange: #f59e0b;
-      --gaming: #8b5cf6;
-      --cosmetics: #ec4899;
-      --fitness: #14b8a6;
-      --tech: #3b82f6;
-      --home: #f97316;
-      --outdoors: #22c55e;
-      --kids: #facc15;
-      --radius: 24px;
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --bg:#f4f2ee;--white:#fff;--black:#111;--gray:#888;--lightgray:#e5e3df;
+      --pop:#ff3860;--green:#00c853;--blue:#2979ff;--amber:#ff9100;
+      --radius:20px;--shadow:0 10px 40px rgba(0,0,0,.08);
     }
-    html, body { height: 100%; font-size: 16px; }
-    body {
-      font-family: 'Inter', system-ui, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      overflow: hidden;
-      -webkit-font-smoothing: antialiased;
+    html,body{height:100%;font-size:16px}
+    body{
+      font-family:'Plus Jakarta Sans',system-ui,sans-serif;
+      background:var(--bg);color:var(--black);overflow:hidden;
+      -webkit-font-smoothing:antialiased;
+    }
+    .card-wrapper,.card,.toast,.drawer{will-change:transform,opacity;backface-visibility:hidden}
+
+    /* === APP SHELL === */
+    .app{width:100%;max-width:430px;height:100dvh;margin:0 auto;display:flex;flex-direction:column;position:relative}
+
+    /* === TOP BAR === */
+    .topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 18px 6px;flex-shrink:0}
+    .topbar-left{display:flex;align-items:center}
+    .brand{font-size:1.25rem;font-weight:900;letter-spacing:-.02em;position:relative}
+    .brand .disco{
+      background:linear-gradient(135deg,#ff3860,#ff6b3d,#ffc107,#4caf50,#2196f3,#9c27b0,#ff3860);
+      background-size:300% 300%;
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+      animation:discoShift 4s ease-in-out infinite;
+      font-style:italic;
+    }
+    .brand .dealss{font-style:normal;color:var(--black);-webkit-text-fill-color:var(--black)}
+    @keyframes discoShift{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+    .topbar-right{display:flex;gap:8px}
+    .icon-btn{
+      width:36px;height:36px;border-radius:50%;border:none;
+      background:var(--white);color:var(--black);font-size:1rem;
+      display:flex;align-items:center;justify-content:center;
+      cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.06);
+      position:relative;transition:transform .12s;
+    }
+    .icon-btn:active{transform:scale(.9)}
+    .icon-btn .dot{
+      position:absolute;top:0;right:0;width:8px;height:8px;border-radius:50%;
+      background:var(--pop);border:2px solid var(--bg);display:none;
+    }
+    .icon-btn .dot.show{display:block}
+
+    /* === ABOUT MODAL === */
+    .about-overlay{
+      position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:200;
+      opacity:0;pointer-events:none;transition:opacity .25s;
+      display:flex;align-items:center;justify-content:center;
+      backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
+    }
+    .about-overlay.open{opacity:1;pointer-events:all}
+    .about-modal{
+      background:var(--white);border-radius:24px;width:90%;max-width:380px;
+      padding:32px 28px;text-align:center;
+      transform:translateY(20px) scale(.96);transition:transform .3s cubic-bezier(.32,.72,0,1);
+      box-shadow:0 20px 60px rgba(0,0,0,.12);
+    }
+    .about-overlay.open .about-modal{transform:none}
+    .about-emoji{font-size:2.4rem;margin-bottom:12px}
+    .about-title{font-size:1.2rem;font-weight:800;margin-bottom:8px;letter-spacing:-.02em}
+    .about-text{font-size:.82rem;line-height:1.6;color:#555;margin-bottom:18px}
+    .about-text strong{color:var(--black)}
+    .about-close{
+      padding:10px 28px;border-radius:100px;border:none;
+      background:var(--black);color:var(--white);
+      font-weight:700;font-size:.8rem;cursor:pointer;font-family:inherit;
+      transition:transform .12s;
+    }
+    .about-close:active{transform:scale(.95)}
+
+    /* === CATEGORY PILLS === */
+    .pills{
+      display:flex;gap:6px;padding:8px 18px 10px;flex-shrink:0;
+      overflow-x:auto;scrollbar-width:none;-ms-overflow-style:none;
+    }
+    .pills::-webkit-scrollbar{display:none}
+    .pill{
+      padding:6px 14px;border-radius:100px;border:none;
+      background:var(--white);color:var(--gray);font-size:.72rem;font-weight:700;
+      cursor:pointer;white-space:nowrap;flex-shrink:0;
+      box-shadow:0 1px 4px rgba(0,0,0,.04);
+      transition:all .18s;font-family:inherit;text-transform:uppercase;letter-spacing:.03em;
+    }
+    .pill:hover{color:var(--black)}
+    .pill.active{background:var(--black);color:var(--white);box-shadow:0 4px 16px rgba(0,0,0,.15)}
+
+    /* === CARD AREA === */
+    .card-area{flex:1;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:0 14px}
+    .card-wrapper{position:absolute;width:100%;max-width:380px;max-height:100%;transform-origin:center 70%}
+
+    /* === PRODUCT CARD === */
+    .card{
+      background:var(--white);border-radius:var(--radius);overflow:hidden;
+      box-shadow:var(--shadow);touch-action:none;user-select:none;cursor:grab;
+      display:flex;flex-direction:column;
+    }
+    .card:active{cursor:grabbing}
+
+    .card-hero{
+      width:100%;aspect-ratio:4/3;background:#f9f9f7;position:relative;
+      display:flex;align-items:center;justify-content:center;overflow:hidden;
+    }
+    .card-hero img{width:70%;height:70%;object-fit:contain;transition:transform .2s}
+    .card:hover .card-hero img{transform:scale(1.04)}
+
+    /* Floating discount badge */
+    .disc-badge{
+      position:absolute;top:12px;left:12px;
+      background:var(--pop);color:#fff;
+      padding:4px 10px;border-radius:8px;
+      font-size:.72rem;font-weight:800;letter-spacing:.03em;
+      border:1.5px solid rgba(255,100,130,.6);
+      animation:badgePop .35s cubic-bezier(.34,1.4,.64,1) both, redGlow 2s ease-in-out .5s infinite;
+    }
+    @keyframes badgePop{from{transform:scale(0);opacity:0}to{transform:scale(1);opacity:1}}
+    @keyframes redGlow{
+      0%,100%{box-shadow:0 0 8px rgba(255,56,96,.3),0 0 20px rgba(255,56,96,.15)}
+      50%{box-shadow:0 0 16px rgba(255,56,96,.6),0 0 36px rgba(255,56,96,.3),0 0 60px rgba(255,56,96,.1)}
+    }
+    /* Floating store pill */
+    .store-badge{
+      position:absolute;top:14px;right:14px;
+      background:rgba(0,0,0,.06);color:var(--gray);
+      padding:4px 10px;border-radius:100px;
+      font-size:.6rem;font-weight:600;
     }
 
-    /* ===== BACKGROUND ===== */
-    .bg-glow { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
-    .bg-glow span { position: absolute; border-radius: 50%; filter: blur(120px); opacity: .12; }
-    .bg-glow .o1 { width: 600px; height: 600px; background: var(--gaming); top: -200px; left: -100px; animation: drift 20s ease-in-out infinite; }
-    .bg-glow .o2 { width: 500px; height: 500px; background: var(--cosmetics); bottom: -150px; right: -100px; animation: drift 25s ease-in-out infinite reverse; }
-    .bg-glow .o3 { width: 400px; height: 400px; background: var(--fitness); top: 40%; left: 50%; animation: drift 22s ease-in-out infinite 5s; }
-    @keyframes drift { 0%,100% { transform: translate(0,0) scale(1); } 33% { transform: translate(60px,-40px) scale(1.1); } 66% { transform: translate(-40px,60px) scale(.9); } }
+    /* Swipe feedback */
+    .swipe-tag{
+      position:absolute;top:40%;font-size:2.4rem;font-weight:800;
+      padding:4px 20px;border-radius:12px;border:4px solid;
+      opacity:0;z-index:5;pointer-events:none;letter-spacing:.02em;
+    }
+    .swipe-tag.yes{left:16px;color:var(--green);border-color:var(--green);transform:translateY(-50%) rotate(-15deg)}
+    .swipe-tag.no{right:16px;color:var(--pop);border-color:var(--pop);transform:translateY(-50%) rotate(15deg)}
 
-    /* ===== FULL-HEIGHT APP LAYOUT ===== */
-    .app {
-      position: relative; z-index: 1;
-      width: 100%; max-width: 520px;
-      height: 100vh; height: 100dvh;
-      margin: 0 auto;
-      padding: 0 16px;
-      display: flex; flex-direction: column;
+    .card-info{padding:10px 16px 14px}
+    .card-title{font-size:.82rem;font-weight:700;line-height:1.3;margin-bottom:6px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;color:var(--black)}
+    .card-price-row{display:flex;align-items:baseline;gap:8px;margin-bottom:8px}
+    .card-price{font-size:1.2rem;font-weight:800;color:var(--green)}
+    .card-was{font-size:.78rem;color:var(--gray);text-decoration:line-through}
+    .card-cta{
+      display:block;width:100%;padding:11px;border:none;border-radius:12px;
+      background:var(--black);color:var(--white);
+      font-size:.85rem;font-weight:700;font-family:inherit;
+      cursor:pointer;text-align:center;text-decoration:none;
+      transition:transform .12s,box-shadow .12s;
+    }
+    .card-cta:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(0,0,0,.15)}
+    .card-cta:active{transform:scale(.98)}
+
+    /* === BOTTOM ACTION BAR === */
+    .action-bar{
+      display:flex;justify-content:center;align-items:center;gap:20px;
+      padding:10px 0 18px;flex-shrink:0;
+    }
+    .act{
+      width:52px;height:52px;border-radius:50%;border:none;
+      display:flex;align-items:center;justify-content:center;
+      font-size:1.3rem;cursor:pointer;
+      transition:transform .12s,box-shadow .12s;
+      box-shadow:0 4px 14px rgba(0,0,0,.07);
+    }
+    .act:active{transform:scale(.88)}
+    .act.pass{background:#fde8ec;color:var(--pop)}
+    .act.pass:hover{box-shadow:0 6px 24px rgba(255,56,96,.2);transform:scale(1.08)}
+    .act.deal{background:#e8f9ef;color:var(--green);width:62px;height:62px;font-size:1.6rem}
+    .act.deal:hover{box-shadow:0 6px 24px rgba(0,200,83,.2);transform:scale(1.08)}
+    .act.fav{background:#fff5e6;color:var(--amber);position:relative}
+    .act.fav:hover{box-shadow:0 6px 24px rgba(255,145,0,.2);transform:scale(1.08)}
+    .fav-count{
+      position:absolute;top:-2px;right:-2px;
+      background:var(--amber);color:#fff;
+      font-size:.5rem;font-weight:700;
+      width:16px;height:16px;border-radius:50%;
+      display:flex;align-items:center;justify-content:center;
+      border:2px solid var(--bg);
+    }
+    .fav-count:empty{display:none}
+
+    /* === COUNTER === */
+    .counter{
+      text-align:center;padding:0 0 2px;font-size:.6rem;color:var(--gray);
+      font-weight:500;flex-shrink:0;
     }
 
-    /* ===== HEADER ===== */
-    header { padding: 12px 0 6px; text-align: center; flex-shrink: 0; }
-    .logo { font-size: clamp(1.2rem, 4vw, 1.6rem); font-weight: 900; letter-spacing: -.03em; }
-    .logo span { background: linear-gradient(135deg, var(--accent), var(--cosmetics)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-    .tagline { font-size: .7rem; color: var(--muted); margin-top: 1px; letter-spacing: .05em; text-transform: uppercase; }
+    /* === DRAWER === */
+    .drawer-bg{
+      position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:100;
+      opacity:0;pointer-events:none;transition:opacity .25s;
+    }
+    .drawer-bg.open{opacity:1;pointer-events:all}
+    .drawer{
+      position:fixed;bottom:0;left:50%;transform:translateX(-50%) translateY(100%);
+      width:100%;max-width:430px;max-height:72vh;background:var(--white);
+      border-radius:20px 20px 0 0;z-index:101;
+      transition:transform .32s cubic-bezier(.32,.72,0,1);
+      display:flex;flex-direction:column;overflow:hidden;
+    }
+    .drawer-bg.open .drawer{transform:translateX(-50%) translateY(0)}
+    .drawer-bar{width:36px;height:4px;background:var(--lightgray);border-radius:4px;margin:10px auto}
+    .drawer-head{font-size:.95rem;font-weight:700;padding:2px 20px 10px}
+    .drawer-body{overflow-y:auto;padding:0 16px 20px;display:flex;flex-direction:column;gap:8px}
+    .drawer-empty{text-align:center;color:var(--gray);padding:36px 0;font-size:.82rem}
+    .fav-item{
+      display:flex;gap:10px;align-items:center;padding:10px;
+      background:var(--bg);border-radius:14px;text-decoration:none;color:var(--black);
+      transition:background .12s;
+    }
+    .fav-item:hover{background:#ebe9e5}
+    .fav-item img{width:46px;height:46px;object-fit:contain;border-radius:10px;background:#fff;padding:3px}
+    .fav-item-info{flex:1;min-width:0}
+    .fav-item-title{font-size:.73rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .fav-item-price{font-size:.76rem;font-weight:700;color:var(--green);margin-top:1px}
+    .fav-item-rm{background:none;border:none;color:var(--gray);cursor:pointer;font-size:.85rem;padding:4px 8px}
+    .fav-item-rm:hover{color:var(--pop)}
 
-    /* ===== CATEGORY TABS ===== */
-    .tabs {
-      display: flex; gap: 6px; padding: 10px 0 10px; flex-shrink: 0;
-      overflow-x: auto; scrollbar-width: none; -ms-overflow-style: none;
+    /* === EMPTY STATE === */
+    .empty{text-align:center;padding:50px 24px}
+    .empty h3{font-size:1.05rem;font-weight:700;margin-bottom:4px}
+    .empty p{color:var(--gray);font-size:.82rem;margin-bottom:14px}
+    .empty button{
+      padding:10px 24px;border-radius:100px;border:none;
+      background:var(--black);color:var(--white);
+      font-weight:700;font-size:.8rem;cursor:pointer;font-family:inherit;
     }
-    .tabs::-webkit-scrollbar { display: none; }
-    .tab {
-      padding: 7px 14px; border-radius: 100px; border: 1.5px solid var(--border);
-      background: transparent; color: var(--muted); font-size: clamp(.65rem, 1.8vw, .75rem); font-weight: 600;
-      cursor: pointer; transition: all .25s; font-family: inherit; white-space: nowrap; flex-shrink: 0;
-    }
-    .tab:hover { border-color: var(--muted); color: var(--text); }
-    .tab.active { color: #fff; border-color: transparent; }
-    .tab[data-cat="gaming"].active { background: var(--gaming); box-shadow: 0 0 20px color-mix(in srgb, var(--gaming) 40%, transparent); }
-    .tab[data-cat="cosmetics"].active { background: var(--cosmetics); box-shadow: 0 0 20px color-mix(in srgb, var(--cosmetics) 40%, transparent); }
-    .tab[data-cat="fitness"].active { background: var(--fitness); box-shadow: 0 0 20px color-mix(in srgb, var(--fitness) 40%, transparent); }
-    .tab[data-cat="tech"].active { background: var(--tech); box-shadow: 0 0 20px color-mix(in srgb, var(--tech) 40%, transparent); }
-    .tab[data-cat="home"].active { background: var(--home); box-shadow: 0 0 20px color-mix(in srgb, var(--home) 40%, transparent); }
-    .tab[data-cat="outdoors"].active { background: var(--outdoors); box-shadow: 0 0 20px color-mix(in srgb, var(--outdoors) 40%, transparent); }
-    .tab[data-cat="kids"].active { background: var(--kids); color: #000; box-shadow: 0 0 20px color-mix(in srgb, var(--kids) 40%, transparent); }
 
-    /* ===== CARD STACK — fills remaining space ===== */
-    .stack-area {
-      flex: 1; display: flex; align-items: center; justify-content: center;
-      position: relative; min-height: 0; overflow: hidden;
+    /* === TOAST === */
+    .toast{
+      position:fixed;bottom:100px;left:50%;
+      transform:translateX(-50%) translateY(12px) scale(.96);
+      background:var(--black);color:var(--white);
+      padding:8px 18px;border-radius:100px;font-size:.72rem;font-weight:600;
+      opacity:0;pointer-events:none;z-index:200;white-space:nowrap;
+      transition:all .2s cubic-bezier(.32,.72,0,1);
     }
-    .card-wrapper { position: absolute; width: 92%; max-width: 400px; }
+    .toast.show{opacity:1;transform:translateX(-50%) translateY(0) scale(1)}
 
-    /* ===== PRODUCT CARD ===== */
-    .card {
-      background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
-      overflow: hidden; touch-action: none; user-select: none; cursor: grab;
-      box-shadow: 0 4px 40px rgba(0,0,0,.4);
-      display: flex; flex-direction: column;
-    }
-    .card:active { cursor: grabbing; }
+    /* === CARD ANIMS === */
+    .card-wrapper.fly-left{transform:translateX(-140%) rotate(-20deg);opacity:0}
+    .card-wrapper.fly-right{transform:translateX(140%) rotate(20deg);opacity:0}
+    .card-wrapper.pop-in{animation:popIn .22s cubic-bezier(.32,.72,0,1) forwards}
+    @keyframes popIn{from{transform:scale(.92) translateY(14px);opacity:0}to{transform:none;opacity:1}}
+    .card-wrapper.s1{transform:scale(.97) translateY(6px);opacity:.4;z-index:1;transition:all .22s cubic-bezier(.32,.72,0,1)}
+    .card-wrapper.s2{transform:scale(.94) translateY(12px);opacity:.15;z-index:0;transition:all .22s cubic-bezier(.32,.72,0,1)}
 
-    .card-img {
-      width: 100%; aspect-ratio: 4/3; position: relative;
-      display: flex; align-items: center; justify-content: center;
-      overflow: hidden; background: #fff;
+    /* === SWIPE FLASH OVERLAY === */
+    .swipe-flash{
+      position:fixed;inset:0;z-index:50;pointer-events:none;opacity:0;
+      transition:opacity .15s;
     }
-    .card-img img {
-      width: 85%; height: 85%; object-fit: contain;
-    }
-    .badge-row { position: absolute; top: 10px; left: 10px; display: flex; gap: 6px; z-index: 2; }
-    .badge {
-      padding: 4px 10px; border-radius: 100px; font-size: .65rem; font-weight: 700;
-      text-transform: uppercase; letter-spacing: .04em; backdrop-filter: blur(8px);
-    }
-    .badge-discount { background: rgba(239,68,68,.9); color: #fff; }
-    .badge-store { background: rgba(255,255,255,.15); color: #fff; }
-    .card-body { padding: 16px 18px; }
-    .card-title { font-size: clamp(.85rem, 2.5vw, 1rem); font-weight: 700; line-height: 1.3; margin-bottom: 6px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-    .card-prices { display: flex; align-items: baseline; gap: 10px; margin-bottom: 4px; }
-    .price-now { font-size: clamp(1.2rem, 3.5vw, 1.5rem); font-weight: 800; color: var(--green); }
-    .price-was { font-size: .85rem; color: var(--muted); text-decoration: line-through; }
-    .card-cat { font-size: .65rem; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
-    .card-deal-btn {
-      display: block; width: 100%; margin-top: 12px; padding: 12px; border: none; border-radius: 14px;
-      background: var(--green); color: #fff; font-size: .9rem; font-weight: 700;
-      font-family: inherit; cursor: pointer; text-align: center; text-decoration: none;
-      transition: all .2s; letter-spacing: .02em;
-    }
-    .card-deal-btn:hover { background: #16a34a; box-shadow: 0 0 20px rgba(34,197,94,.4); }
+    .swipe-flash.left{background:radial-gradient(circle at 30% 50%,rgba(255,56,96,.25),transparent 70%);animation:flashIn .35s ease-out}
+    .swipe-flash.right{background:radial-gradient(circle at 70% 50%,rgba(0,200,83,.25),transparent 70%);animation:flashIn .35s ease-out}
+    @keyframes flashIn{0%{opacity:1}100%{opacity:0}}
 
-    /* Swipe overlays */
-    .swipe-label {
-      position: absolute; top: 50%; font-size: 2.2rem; font-weight: 900;
-      padding: 6px 20px; border-radius: 12px; border: 4px solid;
-      opacity: 0; z-index: 10; pointer-events: none;
-      text-transform: uppercase; letter-spacing: .04em;
+    /* === EMOJI BURST === */
+    .emoji-burst{
+      position:fixed;z-index:55;pointer-events:none;font-size:1.8rem;
+      animation:burst .7s cubic-bezier(.2,.8,.3,1) forwards;
     }
-    .swipe-label.nope { right: 16px; color: var(--red); border-color: var(--red); transform: translateY(-50%) rotate(20deg); }
-    .swipe-label.deal { left: 16px; color: var(--green); border-color: var(--green); transform: translateY(-50%) rotate(-20deg); }
-
-    /* ===== ACTION BUTTONS ===== */
-    .actions { display: flex; justify-content: center; align-items: center; gap: 16px; padding: 12px 0; flex-shrink: 0; }
-    .action-btn {
-      width: 52px; height: 52px; border-radius: 50%; border: 2px solid var(--border);
-      background: var(--surface); color: var(--text); font-size: 1.3rem;
-      display: flex; align-items: center; justify-content: center;
-      cursor: pointer; transition: all .2s; position: relative; overflow: hidden;
+    @keyframes burst{
+      0%{transform:translate(0,0) scale(0) rotate(0);opacity:1}
+      50%{opacity:1}
+      100%{transform:translate(var(--bx),var(--by)) scale(1.2) rotate(var(--br));opacity:0}
     }
-    .action-btn:hover { transform: scale(1.1); }
-    .action-btn.skip { border-color: var(--red); color: var(--red); }
-    .action-btn.skip:hover { background: var(--red); color: #fff; }
-    .action-btn.grab { border-color: var(--green); color: var(--green); width: 64px; height: 64px; font-size: 1.6rem; }
-    .action-btn.grab:hover { background: var(--green); color: #fff; }
-    .action-btn.save { border-color: var(--orange); color: var(--orange); }
-    .action-btn.save:hover { background: var(--orange); color: #fff; }
-    .save-count {
-      position: absolute; top: -5px; right: -5px; background: var(--orange); color: #fff;
-      font-size: .55rem; font-weight: 700; width: 16px; height: 16px; border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-    }
-    .save-count:empty { display: none; }
-
-    /* ===== FOOTER ===== */
-    footer { text-align: center; padding: 6px 0 10px; font-size: .6rem; color: var(--muted); flex-shrink: 0; }
-    footer a { color: var(--muted); }
-
-    /* ===== SAVED DRAWER ===== */
-    .drawer-overlay {
-      position: fixed; inset: 0; background: rgba(0,0,0,.6); z-index: 100;
-      opacity: 0; pointer-events: none; transition: opacity .3s;
-    }
-    .drawer-overlay.open { opacity: 1; pointer-events: all; }
-    .drawer {
-      position: fixed; bottom: 0; left: 50%; transform: translateX(-50%) translateY(100%);
-      width: 100%; max-width: 520px; max-height: 70vh; background: var(--surface);
-      border-radius: 24px 24px 0 0; z-index: 101; transition: transform .35s cubic-bezier(.4,0,.2,1);
-      display: flex; flex-direction: column; overflow: hidden;
-    }
-    .drawer-overlay.open .drawer { transform: translateX(-50%) translateY(0); }
-    .drawer-handle { width: 40px; height: 4px; background: var(--border); border-radius: 4px; margin: 12px auto; }
-    .drawer-title { font-size: 1rem; font-weight: 700; padding: 4px 20px 12px; }
-    .drawer-list { overflow-y: auto; padding: 0 20px 20px; display: flex; flex-direction: column; gap: 10px; }
-    .drawer-empty { text-align: center; color: var(--muted); padding: 40px 0; font-size: .85rem; }
-    .saved-item {
-      display: flex; gap: 12px; align-items: center; padding: 10px; background: var(--card);
-      border-radius: 14px; border: 1px solid var(--border); text-decoration: none; color: var(--text);
-      transition: border-color .2s;
-    }
-    .saved-item:hover { border-color: var(--green); }
-    .saved-item img { width: 50px; height: 50px; object-fit: contain; border-radius: 8px; background: #fff; padding: 2px; }
-    .saved-item-info { flex: 1; min-width: 0; }
-    .saved-item-title { font-size: .78rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .saved-item-price { font-size: .82rem; font-weight: 700; color: var(--green); margin-top: 2px; }
-    .saved-item-remove { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 1rem; padding: 4px 8px; }
-    .saved-item-remove:hover { color: var(--red); }
-
-    /* ===== EMPTY STATE ===== */
-    .empty-state { text-align: center; padding: 40px 20px; }
-    .empty-state h3 { font-size: 1.1rem; margin-bottom: 8px; }
-    .empty-state p { color: var(--muted); font-size: .85rem; margin-bottom: 16px; }
-    .refresh-btn {
-      padding: 10px 24px; border-radius: 100px; border: none; background: var(--accent);
-      color: #fff; font-weight: 600; font-size: .85rem; cursor: pointer; font-family: inherit;
-    }
-    .refresh-btn:hover { background: var(--glow); }
-
-    /* ===== TOAST ===== */
-    .toast {
-      position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%) translateY(20px);
-      background: var(--card); border: 1px solid var(--border); color: var(--text);
-      padding: 10px 20px; border-radius: 100px; font-size: .8rem; font-weight: 600;
-      opacity: 0; pointer-events: none; transition: all .3s; z-index: 200; white-space: nowrap;
-    }
-    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-
-    /* ===== ANIMATIONS ===== */
-    .card-wrapper.animate { transition: transform .4s cubic-bezier(.4,0,.2,1), opacity .4s; }
-    .card-wrapper.fly-left { transform: translateX(-150%) rotate(-30deg); opacity: 0; }
-    .card-wrapper.fly-right { transform: translateX(150%) rotate(30deg); opacity: 0; }
-    .card-wrapper.entering { animation: cardEnter .3s cubic-bezier(.4,0,.2,1) forwards; }
-    @keyframes cardEnter { from { transform: scale(.92) translateY(20px); opacity: 0; } to { transform: scale(1) translateY(0); opacity: 1; } }
-    .card-wrapper.bg1 { transform: scale(.95) translateY(10px); opacity: .5; z-index: 1; }
-    .card-wrapper.bg2 { transform: scale(.9) translateY(20px); opacity: .25; z-index: 0; }
   </style>
 </head>
 <body>
 
-<div class="bg-glow"><span class="o1"></span><span class="o2"></span><span class="o3"></span></div>
-
 <div class="app">
-  <header>
-    <div class="logo"><span>SwipeDeals</span></div>
-    <div class="tagline">Swipe. Save. Score.</div>
-  </header>
-
-  <nav class="tabs">
-    <button class="tab active" data-cat="gaming">&#127918; Gaming</button>
-    <button class="tab" data-cat="cosmetics">&#128132; Cosmetics</button>
-    <button class="tab" data-cat="fitness">&#128170; Fitness</button>
-    <button class="tab" data-cat="tech">&#128187; Tech</button>
-    <button class="tab" data-cat="home">&#127968; Home</button>
-    <button class="tab" data-cat="outdoors">&#9968; Outdoors</button>
-    <button class="tab" data-cat="kids">&#129528; Kids</button>
-  </nav>
-
-  <div class="stack-area" id="stackArea"></div>
-
-  <div class="actions">
-    <button class="action-btn skip" id="btnSkip" title="Skip">&#10005;</button>
-    <button class="action-btn grab" id="btnGrab" title="Grab Deal">&#10003;</button>
-    <button class="action-btn save" id="btnSave" title="Saved Deals">&#9733;<span class="save-count" id="saveCount"></span></button>
+  <!-- Top bar -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="brand"><span class="disco">Disco</span><span class="dealss">Dealss</span></div>
+      <button class="icon-btn" id="btnAbout" title="About" style="width:28px;height:28px;font-size:.7rem;font-weight:800;margin-left:8px">?</button>
+    </div>
+    <div class="topbar-right">
+      <button class="icon-btn" id="btnFavOpen" title="Saved">&#9829;<span class="dot" id="favDot"></span></button>
+    </div>
   </div>
 
-  <footer>Affiliate disclosure: We earn commissions on qualifying purchases. <a href="#">Learn more</a></footer>
+  <!-- Category pills -->
+  <div class="pills" id="pills">
+    <button class="pill active" data-c="gaming">Gaming</button>
+    <button class="pill" data-c="cosmetics">Beauty</button>
+    <button class="pill" data-c="fitness">Fitness</button>
+    <button class="pill" data-c="tech">Tech</button>
+    <button class="pill" data-c="home">Home</button>
+    <button class="pill" data-c="outdoors">Outdoors</button>
+    <button class="pill" data-c="kids">Kids</button>
+  </div>
+
+  <!-- Cards -->
+  <div class="card-area" id="cardArea"></div>
+
+  <!-- Counter -->
+  <div class="counter" id="counter"></div>
+
+  <!-- Actions -->
+  <div class="action-bar">
+    <button class="act pass" id="btnPass" title="Pass">&#10005;</button>
+    <button class="act deal" id="btnDeal" title="Get Deal">&#10003;</button>
+    <button class="act fav" id="btnFav" title="Save">&#9733;<span class="fav-count" id="favCount"></span></button>
+  </div>
 </div>
 
-<div class="drawer-overlay" id="drawerOverlay">
-  <div class="drawer" id="drawer">
-    <div class="drawer-handle"></div>
-    <div class="drawer-title">&#9733; Saved Deals</div>
-    <div class="drawer-list" id="drawerList"></div>
+<!-- Saved drawer -->
+<div class="drawer-bg" id="drawerBg">
+  <div class="drawer">
+    <div class="drawer-bar"></div>
+    <div class="drawer-head">Saved Deals</div>
+    <div class="drawer-body" id="drawerBody"></div>
+  </div>
+</div>
+
+<!-- About modal -->
+<div class="about-overlay" id="aboutOverlay">
+  <div class="about-modal">
+    <div class="about-emoji">&#128293;&#128176;</div>
+    <div class="about-title">Deals worth swiping for.</div>
+    <div class="about-text">
+      We hunt the internet so you don't have to.<br><br>
+      <strong>DiscoDealss</strong> scours thousands of products across Amazon to surface only the ones with <strong>massive discounts</strong> — we're talking 40-50% off or more.<br><br>
+      Swipe right on what excites you, save the rest for later, and never pay full price again. New deals drop daily across gaming, beauty, tech, home, fitness, outdoors &amp; kids.<br><br>
+      <strong>Your wallet called. It said thanks.</strong>
+    </div>
+    <button class="about-close" onclick="document.getElementById('aboutOverlay').classList.remove('open')">Got it</button>
   </div>
 </div>
 
 <div class="toast" id="toast"></div>
 
 <script>
-// =========================================================
-// CONFIG — Replace with your Amazon Associates tag
-// =========================================================
-const AFFILIATE_TAG = 'dealswipes-20';
-
-// =========================================================
-// PRODUCT DATA
-// Each product has a direct Amazon link (url) so buyers
-// land right on the product page ready to add to cart.
-//
-// HOW TO UPDATE:
-// 1. Go to your Amazon Associates dashboard
-// 2. Find a discounted product
-// 3. Click "Get Link" -> "Text" to get your affiliate link
-// 4. Paste it as the "url" value below
-// 5. For the image: right-click the product image on Amazon,
-//    copy image address, paste as "img" value
-// =========================================================
-const products = {
-  gaming: [
-    {
-      title: 'msi Force GC30V2 Wireless Gaming Controller, Dual Vibration Motors, Dual Connection Modes, Interchan',
-      img: 'https://m.media-amazon.com/images/I/81a7j-yI4fL._AC_SL500_.jpg',
-      price: 18.99, was: 39.99, discount: 53, store: 'Amazon',
-      url: 'https://www.amazon.com/dp/B09PFBX39L?tag=' + AFFILIATE_TAG
-    },
-    {
-      title: 'Logitech G502 Hero High Performance Wired Gaming Mouse, Hero 25K Sensor, 25,600 DPI, RGB, Adjustable',
-      img: 'https://m.media-amazon.com/images/I/61mpMH5TzkL._AC_SL500_.jpg',
-      price: 34.99, was: 69.99, discount: 50, store: 'Amazon',
-      url: 'https://www.amazon.com/dp/B07GBZ4Q68?tag=' + AFFILIATE_TAG
-    }
+const TAG='dealswipes-20';
+const products={
+  gaming:[
+    {title:'msi Force GC30V2 Wireless Gaming Controller, Dual Vibration Motors, Dual Connect',img:'https://m.media-amazon.com/images/I/81a7j-yI4fL._AC_SL500_.jpg',price:18.99,was:39.99,discount:53,store:'Amazon',url:'https://www.amazon.com/dp/B09PFBX39L?tag='+TAG},
+    {title:'Logitech G502 Hero High Performance Wired Gaming Mouse, Hero 25K Sensor, 25,600 ',img:'https://m.media-amazon.com/images/I/61mpMH5TzkL._AC_SL500_.jpg',price:34.99,was:69.99,discount:50,store:'Amazon',url:'https://www.amazon.com/dp/B07GBZ4Q68?tag='+TAG}
   ],
-  cosmetics: [
-    {
-      title: 'Versace Bright Crystal By Gianni Versace Edt Vial On Card Mini for Women',
-      img: 'https://m.media-amazon.com/images/I/91RnGRFnOhL._AC_SL500_.jpg',
-      price: 6.26, was: 208.67, discount: 97, store: 'Amazon',
-      url: 'https://www.amazon.com/dp/B004VUBNQU?tag=' + AFFILIATE_TAG
-    },
-    {
-      title: 'e.l.f. Lip Lacquer, Nourishing, Non-Sticky Ultra-Shine Lip Gloss With Sheer Color, Infused With Vita',
-      img: 'https://m.media-amazon.com/images/I/51GO4N6tBLL._AC_SL500_.jpg',
-      price: 4.00, was: 50.00, discount: 92, store: 'Amazon',
-      url: 'https://www.amazon.com/dp/B0BSR85M24?tag=' + AFFILIATE_TAG
-    },
-    {
-      title: 'MAYBELLINE Lifter Glaze Oil Balm with Hyaluronic Acid and Hydrating Oil Blend, Lip Balm with 24HRs o',
-      img: 'https://m.media-amazon.com/images/I/613hCQ-jtvL._AC_SL500_.jpg',
-      price: 6.97, was: 69.70, discount: 90, store: 'Amazon',
-      url: 'https://www.amazon.com/dp/B0F1DF3FVD?tag=' + AFFILIATE_TAG
-    },
-    {
-      title: 'Color Changing Full Coverage Liquid Foundation Makeup Gift Set,Moisturizing BB Cream for Women,Flawl',
-      img: 'https://m.media-amazon.com/images/I/71eBP04cJ0L._AC_SL500_.jpg',
-      price: 7.98, was: 56.56, discount: 86, store: 'Amazon',
-      url: 'https://www.amazon.com/dp/B0CWKVWTZ1?tag=' + AFFILIATE_TAG
-    },
-    {
-      title: 'SHEGLAM Color Bloom Liquid Blush Makeup for Cheeks Matte Finish - Love Cake',
-      img: 'https://m.media-amazon.com/images/I/51INVV9sgzL._AC_SL500_.jpg',
-      price: 6.99, was: 38.83, discount: 82, store: 'Amazon',
-      url: 'https://www.amazon.com/dp/B0BHFBBH25?tag=' + AFFILIATE_TAG
-    },
-    {
-      title: 'Rimmel Stay Glossy Lip Gloss - Non-Sticky and Lightweight Formula for Lip Color and Shine - 130 Blus',
-      img: 'https://m.media-amazon.com/images/I/51Y4EvddvUL._AC_SL500_.jpg',
-      price: 4.99, was: 27.72, discount: 82, store: 'Amazon',
-      url: 'https://www.amazon.com/dp/B00Q26VWZI?tag=' + AFFILIATE_TAG
-    },
-    {
-      title: 'Maybelline New York Lifter Gloss Hydrating Lip Gloss with Hyaluronic Acid, Gummy Bear, Sheer Light P',
-      img: 'https://m.media-amazon.com/images/I/71fVJhpuumL._AC_SL500_.jpg',
-      price: 9.98, was: 55.44, discount: 82, store: 'Amazon',
-      url: 'https://www.amazon.com/dp/B0C1MH8R2M?tag=' + AFFILIATE_TAG
-    },
-    {
-      title: 'wet n wild MegaSlicks Lip Gloss, Ultra-Glossy, Vitamin-E Enriched, Ultra-Gloss High Shine Moisturizi',
-      img: 'https://m.media-amazon.com/images/I/81umwuznBlL._AC_SL500_.jpg',
-      price: 2.28, was: 12.00, discount: 81, store: 'Amazon',
-      url: 'https://www.amazon.com/dp/B09NX12RLP?tag=' + AFFILIATE_TAG
-    }
+  cosmetics:[
+    {title:'LANEIGE Lip Glowy Balm: Sheer Tinted Lip Moisturizer with Shea Butter, for Hydra',img:'https://m.media-amazon.com/images/I/61HzwNX24KL._AC_SL500_.jpg',price:19.00,was:54.29,discount:65,store:'Amazon',url:'https://www.amazon.com/dp/B09HN7NTJP?tag='+TAG},
+    {title:'essence | Lash Princess False Lash Effect Mascara | Volumizing & Lengthening | C',img:'https://m.media-amazon.com/images/I/61K6cQhw4EL._AC_SL500_.jpg',price:4.97,was:12.43,discount:60,store:'Amazon',url:'https://www.amazon.com/dp/B00T0C9XRK?tag='+TAG},
+    {title:'L\'Oreal Paris Extensionist Mascara, Lengthening, Volumizing, and Curling Formul',img:'https://m.media-amazon.com/images/I/61v7CPtyOHL._AC_SL500_.jpg',price:12.97,was:31.63,discount:59,store:'Amazon',url:'https://www.amazon.com/dp/B0FSSPR9C1?tag='+TAG},
+    {title:'LANEIGE Glaze Craze Tinted Lip Serum: Hydrating Lip Serum for Glossy, Nourished ',img:'https://m.media-amazon.com/images/I/51O7t9I+EzL._AC_SL500_.jpg',price:22.00,was:52.38,discount:58,store:'Amazon',url:'https://www.amazon.com/dp/B0DT2JNXP2?tag='+TAG},
+    {title:'essence | Lash Without Limits Extreme Lengthening & Volume Mascara (01 | Extra B',img:'https://m.media-amazon.com/images/I/61axSenmWAL._AC_SL500_.jpg',price:4.97,was:11.56,discount:57,store:'Amazon',url:'https://www.amazon.com/dp/B0C78G8ZPR?tag='+TAG},
+    {title:'Lip Smacker Liquid Lip Gloss Friendship Pack, 5 Count',img:'https://m.media-amazon.com/images/I/81kB8v8ZXdL._AC_SL500_.jpg',price:8.77,was:19.49,discount:55,store:'Amazon',url:'https://www.amazon.com/dp/B00YELSUUI?tag='+TAG},
+    {title:'Eyebrow Trimming Kit Stainless Steel Scissors and Razor with Comb Professional B',img:'https://m.media-amazon.com/images/I/71mrb2yVijL._AC_SL500_.jpg',price:2.36,was:4.78,discount:51,store:'Amazon',url:'https://www.amazon.com/dp/B0DRD1WDX3?tag='+TAG},
+    {title:'CeraVe Eye Repair Cream, Under Eye Cream For Puffiness And Bags Under Eyes, Hyal',img:'https://m.media-amazon.com/images/I/71DMbiEXcPL._AC_SL500_.jpg',price:14.44,was:28.88,discount:50,store:'Amazon',url:'https://www.amazon.com/dp/B00JJPMXDO?tag='+TAG}
   ],
-  fitness: [
-    {
-      title: 'Resistance Bands, Professional Exercise Bands, Physical Therapy Bands for Strength Training, Yoga, P',
-      img: 'https://m.media-amazon.com/images/I/71aXzocSNKL._AC_SL500_.jpg',
-      price: 5.99, was: 11.99, discount: 50, store: 'Amazon',
-      url: 'https://www.amazon.com/dp/B0DB7LP889?tag=' + AFFILIATE_TAG
-    },
-    {
-      title: 'Booty Bands Set, Resistance Bands for Working Out, Exercise Bands for Women and Men Legs and Butt, S',
-      img: 'https://m.media-amazon.com/images/I/61-8Okxrv-L._AC_SL500_.jpg',
-      price: 5.01, was: 9.99, discount: 50, store: 'Amazon',
-      url: 'https://www.amazon.com/dp/B0CRL45SZ4?tag=' + AFFILIATE_TAG
-    }
+  fitness:[
+    {title:'Resistance Bands, Professional Exercise Bands, Physical Therapy Bands for Streng',img:'https://m.media-amazon.com/images/I/71aXzocSNKL._AC_SL500_.jpg',price:5.99,was:11.99,discount:50,store:'Amazon',url:'https://www.amazon.com/dp/B0DB7LP889?tag='+TAG},
+    {title:'Booty Bands Set, Resistance Bands for Working Out, Exercise Bands for Women and ',img:'https://m.media-amazon.com/images/I/61-8Okxrv-L._AC_SL500_.jpg',price:5.01,was:9.99,discount:50,store:'Amazon',url:'https://www.amazon.com/dp/B0CRL45SZ4?tag='+TAG}
+  ],
+  tech:[
+    {title:'1080P HD Webcam with Microphone, Noise Cancellation, Privacy Cover, Wide-Angle L',img:'https://m.media-amazon.com/images/I/71umGKAliOL._AC_SL500_.jpg',price:19.99,was:209.99,discount:90,store:'Amazon',url:'https://www.amazon.com/dp/B0GLWVGW3H?tag='+TAG},
+    {title:'Ambertronix Minimalist LED Desk Lamp, 5 Lighting Modes, USB Charging Port, Alumi',img:'https://m.media-amazon.com/images/I/51CRukqbS6L._AC_SL500_.jpg',price:9.99,was:19.99,discount:50,store:'Amazon',url:'https://www.amazon.com/dp/B0FXFQPT48?tag='+TAG},
+    {title:'LISEN for iPad Stand Tablet Holder for Desk, Office Desk Accessories for Men Wom',img:'https://m.media-amazon.com/images/I/71vrRidPzqL._AC_SL500_.jpg',price:9.48,was:18.99,discount:50,store:'Amazon',url:'https://www.amazon.com/dp/B0BTDHQJ6X?tag='+TAG}
+  ],
+  home:[
+    {title:'Novabright Boho Wall Art Set of 4, Rustic Wooden Wall Decor Plants Sunset Nature',img:'https://m.media-amazon.com/images/I/81XW7SSrHhL._AC_SL500_.jpg',price:4.99,was:16.99,discount:71,store:'Amazon',url:'https://www.amazon.com/dp/B0FQ5SJPGK?tag='+TAG},
+    {title:'TOONOW Fleece Blanket Super Soft Cozy Throw Blanket 50" x 60", Lightweight Fuzzy',img:'https://m.media-amazon.com/images/I/81Fg4RG6XbL._AC_SL500_.jpg',price:9.99,was:24.99,discount:60,store:'Amazon',url:'https://www.amazon.com/dp/B097QSKS4Z?tag='+TAG},
+    {title:'Exclusivo Mezcla Fleece Throw Blanket for Couch,Super Soft and Warm Lightweight ',img:'https://m.media-amazon.com/images/I/71kqgbewYUL._AC_SL500_.jpg',price:9.48,was:22.99,discount:59,store:'Amazon',url:'https://www.amazon.com/dp/B0D25Z18JG?tag='+TAG},
+    {title:'Exclusivo Mezcla Fleece Throw Blanket for Couch, Extra Large Fuzzy Ivory Bed Bla',img:'https://m.media-amazon.com/images/I/81+gwnhdAWL._AC_SL500_.jpg',price:8.99,was:21.99,discount:59,store:'Amazon',url:'https://www.amazon.com/dp/B0C6DXWJHL?tag='+TAG},
+    {title:'Exclusivo Mezcla Soft Fleece Throw Blanket for Couch, Super Soft Velvet Plush Fl',img:'https://m.media-amazon.com/images/I/81aNXxIO-eL._AC_SL500_.jpg',price:9.49,was:21.99,discount:57,store:'Amazon',url:'https://www.amazon.com/dp/B0D9NKGSD6?tag='+TAG},
+    {title:'2025 Upgraded Herb Scissors, Effortless Herb Shears Cutter Tool with Sharp Stain',img:'https://m.media-amazon.com/images/I/81-N0JsOEPL._AC_SL500_.jpg',price:8.99,was:19.99,discount:55,store:'Amazon',url:'https://www.amazon.com/dp/B07DPCCBZT?tag='+TAG},
+    {title:'3pcs Black And Gold Abstract Canvas Wall Art Modern Texture Grey And Gold Marble',img:'https://m.media-amazon.com/images/I/81Iw-nMOTxL._AC_SL500_.jpg',price:14.99,was:29.99,discount:50,store:'Amazon',url:'https://www.amazon.com/dp/B0DJZ5X8JC?tag='+TAG},
+    {title:'Tree of Life Gold Canvas Wall Art Modern Luxury Golden Big Tree Painting Picture',img:'https://m.media-amazon.com/images/I/81Lu-b-MDPL._AC_SL500_.jpg',price:7.49,was:14.99,discount:50,store:'Amazon',url:'https://www.amazon.com/dp/B0FNRKTB2T?tag='+TAG}
+  ],
+  outdoors:[
+    {title:'COTOUXKER Bike Frame Bag, Mountain Bike Bag for Road and Mountain Bikes Lightwei',img:'https://m.media-amazon.com/images/I/71uAaHk0VvL._AC_SL500_.jpg',price:5.98,was:11.98,discount:50,store:'Amazon',url:'https://www.amazon.com/dp/B0DF7VZKK4?tag='+TAG},
+    {title:'Bike Lights for Night Riding with Bell, Super Bright Bicycle Reflectors, USB Rec',img:'https://m.media-amazon.com/images/I/716dr6oRGML._AC_SL500_.jpg',price:18.99,was:34.99,discount:46,store:'Amazon',url:'https://www.amazon.com/dp/B014QEWX2I?tag='+TAG},
+    {title:'PLUSINNO Fishing Gear, Fishing Tools, Fishing Accessories, Corrosion Resistant F',img:'https://m.media-amazon.com/images/I/7140dEEZgZL._AC_SL500_.jpg',price:22.92,was:39.99,discount:43,store:'Amazon',url:'https://www.amazon.com/dp/B0FH75L1ZM?tag='+TAG},
+    {title:'STORYCOAST',img:'https://m.media-amazon.com/images/I/71ojjyMiISL._AC_SL500_.jpg',price:9.99,was:16.99,discount:41,store:'Amazon',url:'https://www.amazon.com/dp/B0DJLN32L2?tag='+TAG},
+    {title:'WITTKOP Bike mirror | Large HD field of vision | 360° rotatable & foldable | Mou',img:'https://m.media-amazon.com/images/I/71sW9-SFFEL._AC_SL500_.jpg',price:14.99,was:24.99,discount:40,store:'Amazon',url:'https://www.amazon.com/dp/B0CND6MSH9?tag='+TAG}
+  ],
+  kids:[
+    {title:'75 Years of Little Golden Books: 1942-2017: A Commemorative Set of 12 Best-Loved',img:'https://m.media-amazon.com/images/I/71FxQ0jjdEL._AC_SL500_.jpg',price:30.38,was:71.88,discount:58,store:'Amazon',url:'https://www.amazon.com/dp/0399559515?tag='+TAG},
+    {title:'12 Beloved Disney Classic Little Golden Books (Boxed Set)',img:'https://m.media-amazon.com/images/I/91fhAoNOj3L._AC_SL500_.jpg',price:33.38,was:71.88,discount:54,store:'Amazon',url:'https://www.amazon.com/dp/0736438785?tag='+TAG},
+    {title:'Kids Headphones - noot products K11 Foldable Stereo Tangle-Free 3.5mm Jack Wired',img:'https://m.media-amazon.com/images/I/71Hj72GiJQL._AC_SL500_.jpg',price:9.22,was:19.99,discount:54,store:'Amazon',url:'https://www.amazon.com/dp/B0746RBK2M?tag='+TAG},
+    {title:'Kids Smart Phone Toys for Girls,Christmas Birthday Gifts for Girls Age 3-10 Kids',img:'https://m.media-amazon.com/images/I/71J93ayMZRL._AC_SL500_.jpg',price:17.99,was:35.99,discount:50,store:'Amazon',url:'https://www.amazon.com/dp/B0F8BP5TRY?tag='+TAG}
   ]
 };
 
-// =========================================================
-// STATE
-// =========================================================
-let currentCat = 'gaming';
-let queue = [];
-let saved = JSON.parse(localStorage.getItem('sd_saved') || '[]');
-let isDragging = false, startX = 0, currentX = 0, animating = false;
+// === STATE ===
+let cat='gaming',queue=[],saved=JSON.parse(localStorage.getItem('sd2')||'[]');
+let dragging=false,sx=0,dx=0,vel=0,lx=0,lt=0,busy=false,raf=null,wrap=null;
+const $=id=>document.getElementById(id);
+const area=$('cardArea'),toastEl=$('toast'),drawerBg=$('drawerBg'),drawerBody=$('drawerBody');
 
-const stackArea = document.getElementById('stackArea');
-const saveCountEl = document.getElementById('saveCount');
-const toastEl = document.getElementById('toast');
-const drawerOverlay = document.getElementById('drawerOverlay');
-const drawerList = document.getElementById('drawerList');
+// === UTILS ===
+function shuffle(a){const b=[...a];for(let i=b.length-1;i>0;i--){const j=Math.random()*i+1|0;[b[i],b[j]]=[b[j],b[i]]}return b}
+function toast(m){toastEl.textContent=m;toastEl.classList.add('show');clearTimeout(toastEl._t);toastEl._t=setTimeout(()=>toastEl.classList.remove('show'),1200)}
+function updCount(){$('favCount').textContent=saved.length||'';$('favDot').classList.toggle('show',saved.length>0)}
+function persist(){localStorage.setItem('sd2',JSON.stringify(saved));updCount()}
 
-// =========================================================
-// HELPERS
-// =========================================================
-function shuffle(arr) {
-  const a = [...arr];
-  for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
-  return a;
+// Swipe visual effects
+function swipeFlash(dir){
+  const el=document.createElement('div');
+  el.className='swipe-flash '+dir;
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(),400);
 }
-
-function toast(msg) {
-  toastEl.textContent = msg;
-  toastEl.classList.add('show');
-  clearTimeout(toastEl._t);
-  toastEl._t = setTimeout(() => toastEl.classList.remove('show'), 1800);
-}
-
-function updateSaveCount() {
-  saveCountEl.textContent = saved.length || '';
-}
-
-function persistSaved() {
-  localStorage.setItem('sd_saved', JSON.stringify(saved));
-  updateSaveCount();
-}
-
-// =========================================================
-// CARD RENDERING
-// =========================================================
-function renderStack() {
-  stackArea.innerHTML = '';
-  if (queue.length === 0) {
-    stackArea.innerHTML = `
-      <div class="empty-state">
-        <h3>No more deals!</h3>
-        <p>You've swiped through all ${currentCat} deals.</p>
-        <button class="refresh-btn" onclick="loadCategory(currentCat)">Shuffle & Reload</button>
-      </div>`;
-    return;
+function emojiBurst(dir){
+  const emojis=dir==='right'?['&#128176;','&#128293;','&#9989;','&#128525;']:['&#128075;','&#10060;','&#128164;'];
+  const cx=dir==='right'?window.innerWidth*.7:window.innerWidth*.3;
+  const cy=window.innerHeight*.4;
+  for(let i=0;i<6;i++){
+    const e=document.createElement('div');
+    e.className='emoji-burst';
+    e.innerHTML=emojis[i%emojis.length];
+    e.style.left=cx+'px';e.style.top=cy+'px';
+    e.style.setProperty('--bx',(Math.random()*160-80)+'px');
+    e.style.setProperty('--by',(Math.random()*-180-40)+'px');
+    e.style.setProperty('--br',(Math.random()*60-30)+'deg');
+    e.style.animationDelay=(i*0.06)+'s';
+    document.body.appendChild(e);
+    setTimeout(()=>e.remove(),800);
   }
+}
 
-  const show = queue.slice(0, 3);
-  show.forEach((p, i) => {
-    const wrapper = document.createElement('div');
-    wrapper.className = 'card-wrapper' + (i === 1 ? ' bg1' : i === 2 ? ' bg2' : '');
-    wrapper.style.zIndex = 10 - i;
-
-    if (i === 0) {
-      wrapper.classList.add('entering');
-      wrapper.innerHTML = `
-        <div class="card" id="topCard">
-          <div class="swipe-label deal" id="labelDeal">DEAL!</div>
-          <div class="swipe-label nope" id="labelNope">NOPE</div>
-          <div class="card-img">
-            <div class="badge-row">
-              <span class="badge badge-discount">-${p.discount}%</span>
-              <span class="badge badge-store">${p.store}</span>
-            </div>
-            <img src="${p.img}" alt="${p.title}" draggable="false">
-          </div>
-          <div class="card-body">
-            <div class="card-title">${p.title}</div>
-            <div class="card-prices">
-              <span class="price-now">$${p.price.toFixed(2)}</span>
-              <span class="price-was">$${p.was.toFixed(2)}</span>
-            </div>
-            <div class="card-cat">${currentCat}</div>
-            <a class="card-deal-btn" href="${p.url}" target="_blank" rel="noopener">GET THIS DEAL &rarr;</a>
-          </div>
-        </div>`;
-      setupDrag(wrapper);
+// === RENDER ===
+function render(){
+  area.innerHTML='';
+  $('counter').textContent=queue.length?`${queue.length} deal${queue.length>1?'s':''} left`:'';
+  if(!queue.length){area.innerHTML='<div class="empty"><h3>All done!</h3><p>No more '+cat+' deals.</p><button onclick="load(cat)">Reload</button></div>';return}
+  queue.slice(0,3).forEach((p,i)=>{
+    const w=document.createElement('div');
+    w.className='card-wrapper'+(i===1?' s1':i===2?' s2':'');
+    w.style.zIndex=10-i;
+    if(i===0){
+      w.classList.add('pop-in');
+      w.innerHTML=`<div class="card">
+        <div class="swipe-tag yes" id="tagY">DEAL</div>
+        <div class="swipe-tag no" id="tagN">NOPE</div>
+        <div class="card-hero">
+          <span class="disc-badge">-${p.discount}%</span>
+          <span class="store-badge">${p.store}</span>
+          <img src="${p.img}" alt="" draggable="false">
+        </div>
+        <div class="card-info">
+          <div class="card-title">${p.title}</div>
+          <div class="card-price-row"><span class="card-price">$${p.price.toFixed(2)}</span><span class="card-was">$${p.was.toFixed(2)}</span></div>
+          <a class="card-cta" href="${p.url}" target="_blank" rel="noopener">Get This Deal &rarr;</a>
+        </div>
+      </div>`;
+      initSwipe(w);
     } else {
-      wrapper.innerHTML = `
-        <div class="card">
-          <div class="card-img">
-            <div class="badge-row">
-              <span class="badge badge-discount">-${p.discount}%</span>
-              <span class="badge badge-store">${p.store}</span>
-            </div>
-            <img src="${p.img}" alt="${p.title}" draggable="false">
-          </div>
-          <div class="card-body">
-            <div class="card-title">${p.title}</div>
-            <div class="card-prices">
-              <span class="price-now">$${p.price.toFixed(2)}</span>
-              <span class="price-was">$${p.was.toFixed(2)}</span>
-            </div>
-            <div class="card-cat">${currentCat}</div>
-          </div>
-        </div>`;
+      w.innerHTML=`<div class="card"><div class="card-hero"><span class="disc-badge">-${p.discount}%</span><span class="store-badge">${p.store}</span><img src="${p.img}" alt="" draggable="false"></div><div class="card-info"><div class="card-title">${p.title}</div><div class="card-price-row"><span class="card-price">$${p.price.toFixed(2)}</span><span class="card-was">$${p.was.toFixed(2)}</span></div></div></div>`;
     }
-    stackArea.appendChild(wrapper);
+    area.appendChild(w);
   });
 }
 
-// =========================================================
-// DRAG / SWIPE
-// =========================================================
-function setupDrag(wrapper) {
-  const onStart = (x) => {
-    if (animating) return;
-    isDragging = true;
-    startX = x;
-    currentX = 0;
-    wrapper.style.transition = 'none';
-  };
-
-  const onMove = (x) => {
-    if (!isDragging) return;
-    currentX = x - startX;
-    const rotate = currentX * 0.08;
-    wrapper.style.transform = `translateX(${currentX}px) rotate(${rotate}deg)`;
-    const dealLabel = document.getElementById('labelDeal');
-    const nopeLabel = document.getElementById('labelNope');
-    if (dealLabel) dealLabel.style.opacity = Math.min(Math.max(currentX / 100, 0), 1);
-    if (nopeLabel) nopeLabel.style.opacity = Math.min(Math.max(-currentX / 100, 0), 1);
-  };
-
-  const onEnd = () => {
-    if (!isDragging) return;
-    isDragging = false;
-    const threshold = 80;
-    if (currentX > threshold) { flyCard('right'); }
-    else if (currentX < -threshold) { flyCard('left'); }
-    else {
-      wrapper.style.transition = 'transform .3s cubic-bezier(.4,0,.2,1)';
-      wrapper.style.transform = '';
-      const dealLabel = document.getElementById('labelDeal');
-      const nopeLabel = document.getElementById('labelNope');
-      if (dealLabel) dealLabel.style.opacity = 0;
-      if (nopeLabel) nopeLabel.style.opacity = 0;
-    }
-  };
-
-  wrapper.addEventListener('touchstart', e => { onStart(e.touches[0].clientX); }, { passive: true });
-  wrapper.addEventListener('touchmove', e => { onMove(e.touches[0].clientX); }, { passive: true });
-  wrapper.addEventListener('touchend', onEnd);
-  wrapper.addEventListener('mousedown', e => { e.preventDefault(); onStart(e.clientX); });
-  window.addEventListener('mousemove', e => { if (isDragging) onMove(e.clientX); });
-  window.addEventListener('mouseup', onEnd);
+// === SWIPE ENGINE ===
+function initSwipe(w){
+  wrap=w;
+  const down=x=>{if(busy)return;dragging=true;sx=x;dx=0;vel=0;lx=x;lt=performance.now();w.style.transition='none'};
+  const move=x=>{if(!dragging)return;const n=performance.now(),d=n-lt;if(d>0)vel=(x-lx)/d;lx=x;lt=n;dx=x-sx;applyDrag(w,dx)};
+  const up=()=>{if(!dragging)return;dragging=false;const sp=Math.abs(vel);if(dx>55||(dx>25&&sp>.35))fly('right',vel);else if(dx<-55||(dx<-25&&sp>.35))fly('left',vel);else spring(w)};
+  w.addEventListener('touchstart',e=>down(e.touches[0].clientX),{passive:true});
+  w.addEventListener('touchmove',e=>move(e.touches[0].clientX),{passive:true});
+  w.addEventListener('touchend',up);
+  w.addEventListener('mousedown',e=>{e.preventDefault();down(e.clientX)});
+  window.addEventListener('mousemove',e=>{if(dragging)move(e.clientX)});
+  window.addEventListener('mouseup',up);
 }
 
-function flyCard(dir) {
-  animating = true;
-  const wrapper = stackArea.querySelector('.card-wrapper');
-  if (!wrapper) return;
-  wrapper.classList.add('animate', dir === 'right' ? 'fly-right' : 'fly-left');
-
-  const product = queue[0];
-  if (dir === 'right') {
-    // Use a real <a> tag click to avoid popup blockers
-    const a = document.createElement('a');
-    a.href = product.url;
-    a.target = '_blank';
-    a.rel = 'noopener';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    toast('Opening deal!');
-  } else {
-    toast('Skipped');
-  }
-
-  setTimeout(() => {
-    queue.shift();
-    animating = false;
-    renderStack();
-  }, 400);
+function applyDrag(el,x){
+  const r=x*.055,s=1-Math.abs(x)*.00008;
+  el.style.transform=`translateX(${x}px) rotate(${r}deg) scale(${s})`;
+  const y=$('tagY'),n=$('tagN');
+  if(y)y.style.opacity=Math.min(Math.max(x/70,0),1);
+  if(n)n.style.opacity=Math.min(Math.max(-x/70,0),1);
 }
 
-// =========================================================
-// BUTTONS
-// =========================================================
-document.getElementById('btnSkip').onclick = () => { if (!animating && queue.length) flyCard('left'); };
-document.getElementById('btnGrab').onclick = () => { if (!animating && queue.length) flyCard('right'); };
-document.getElementById('btnSave').onclick = () => {
-  if (queue.length && !animating) {
-    const p = queue[0];
-    if (!saved.find(s => s.title === p.title)) {
-      saved.push({ ...p, cat: currentCat });
-      persistSaved();
-      toast('Saved!');
-    } else {
-      toast('Already saved');
-    }
-  }
-  renderDrawer();
-  drawerOverlay.classList.add('open');
+function spring(el){
+  let x=dx,v=vel*6;const k=.13,d=.76;
+  function tick(){v+=-x*k;v*=d;x+=v;if(Math.abs(x)<.4&&Math.abs(v)<.08){el.style.transform='';const y=$('tagY'),n=$('tagN');if(y)y.style.opacity=0;if(n)n.style.opacity=0;return}applyDrag(el,x);raf=requestAnimationFrame(tick)}
+  if(raf)cancelAnimationFrame(raf);raf=requestAnimationFrame(tick);
+}
+
+function fly(dir,v){
+  busy=true;const w=area.querySelector('.card-wrapper');if(!w)return;
+  const sp=Math.max(Math.abs(v||.5),.3),dur=Math.max(130,Math.min(250,180/sp));
+  w.style.transition=`transform ${dur}ms cubic-bezier(.2,.6,.3,1),opacity ${dur}ms`;
+  w.classList.add(dir==='right'?'fly-right':'fly-left');
+  // Visual effects
+  swipeFlash(dir==='right'?'right':'left');
+  emojiBurst(dir==='right'?'right':'left');
+  const p=queue[0];
+  if(dir==='right'){const a=document.createElement('a');a.href=p.url;a.target='_blank';a.rel='noopener';document.body.appendChild(a);a.click();document.body.removeChild(a);toast('Deal grabbed!')}
+  else toast('Nah, next!');
+  setTimeout(()=>{queue.shift();busy=false;render()},dur+20);
+}
+
+// === BUTTONS ===
+$('btnPass').onclick=()=>{if(!busy&&queue.length)fly('left',.7)};
+$('btnDeal').onclick=()=>{if(!busy&&queue.length)fly('right',.7)};
+$('btnFav').onclick=()=>{
+  if(queue.length&&!busy){const p=queue[0];if(!saved.find(s=>s.title===p.title)){saved.push({...p,cat});persist();toast('Saved!')}else toast('Already saved')}
+  renderDrawer();drawerBg.classList.add('open');
 };
+$('btnFavOpen').onclick=()=>{renderDrawer();drawerBg.classList.add('open')};
+$('btnAbout').onclick=()=>$('aboutOverlay').classList.add('open');
+$('aboutOverlay').addEventListener('click',e=>{if(e.target===$('aboutOverlay'))$('aboutOverlay').classList.remove('open')});
 
-// =========================================================
-// DRAWER
-// =========================================================
-function renderDrawer() {
-  if (saved.length === 0) {
-    drawerList.innerHTML = '<div class="drawer-empty">No saved deals yet. Tap the star to save one!</div>';
-    return;
-  }
-  drawerList.innerHTML = saved.map((p, i) => `
-    <a class="saved-item" href="${p.url}" target="_blank" rel="noopener">
-      <img src="${p.img}" alt="">
-      <div class="saved-item-info">
-        <div class="saved-item-title">${p.title}</div>
-        <div class="saved-item-price">$${p.price.toFixed(2)} <span style="color:var(--muted);font-weight:400;font-size:.75rem;text-decoration:line-through">$${p.was.toFixed(2)}</span></div>
-      </div>
-      <button class="saved-item-remove" onclick="event.preventDefault();event.stopPropagation();removeSaved(${i})">&#10005;</button>
-    </a>
-  `).join('');
+// === DRAWER ===
+function renderDrawer(){
+  if(!saved.length){drawerBody.innerHTML='<div class="drawer-empty">No saved deals yet</div>';return}
+  drawerBody.innerHTML=saved.map((p,i)=>`<a class="fav-item" href="${p.url}" target="_blank" rel="noopener"><img src="${p.img}" alt=""><div class="fav-item-info"><div class="fav-item-title">${p.title}</div><div class="fav-item-price">$${p.price.toFixed(2)} <span style="color:var(--gray);font-weight:400;font-size:.65rem;text-decoration:line-through">$${p.was.toFixed(2)}</span></div></div><button class="fav-item-rm" onclick="event.preventDefault();event.stopPropagation();rmFav(${i})">&#10005;</button></a>`).join('');
 }
+function rmFav(i){saved.splice(i,1);persist();renderDrawer();if(!saved.length)drawerBg.classList.remove('open')}
+drawerBg.addEventListener('click',e=>{if(e.target===drawerBg)drawerBg.classList.remove('open')});
 
-function removeSaved(i) {
-  saved.splice(i, 1);
-  persistSaved();
-  renderDrawer();
-  if (saved.length === 0) drawerOverlay.classList.remove('open');
-}
-
-drawerOverlay.addEventListener('click', e => {
-  if (e.target === drawerOverlay) drawerOverlay.classList.remove('open');
+// === CATEGORIES ===
+function load(c){cat=c;queue=shuffle(products[c]||[]);render()}
+document.querySelectorAll('.pill').forEach(p=>{
+  p.onclick=()=>{document.querySelectorAll('.pill').forEach(x=>x.classList.remove('active'));p.classList.add('active');load(p.dataset.c);p.scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'})}
 });
 
-// =========================================================
-// CATEGORY SWITCHING
-// =========================================================
-function loadCategory(cat) {
-  currentCat = cat;
-  queue = shuffle(products[cat]);
-  renderStack();
-}
+// === KEYBOARD ===
+document.addEventListener('keydown',e=>{if(busy||!queue.length)return;if(e.key==='ArrowLeft')fly('left',.7);if(e.key==='ArrowRight')fly('right',.7);if(e.key==='s')$('btnFav').click()});
 
-document.querySelectorAll('.tab').forEach(tab => {
-  tab.onclick = () => {
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    tab.classList.add('active');
-    loadCategory(tab.dataset.cat);
-  };
-});
-
-// =========================================================
-// KEYBOARD
-// =========================================================
-document.addEventListener('keydown', e => {
-  if (animating || !queue.length) return;
-  if (e.key === 'ArrowLeft') flyCard('left');
-  if (e.key === 'ArrowRight') flyCard('right');
-  if (e.key === 's' || e.key === 'S') document.getElementById('btnSave').click();
-});
-
-// =========================================================
-// INIT
-// =========================================================
-updateSaveCount();
-loadCategory('gaming');
+// === INIT ===
+updCount();load('gaming');
 </script>
 </body>
 </html>
